@@ -14,7 +14,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection(); //Removed because this will run in AKS
 
 app.UseAuthorization();
 
