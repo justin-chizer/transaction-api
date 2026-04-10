@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallet API — Data Model</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 48px;
+  }
+
+  .diagram {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Table card ── */
+  .table-card {
+    background: #161b27;
+    border: 1px solid #1e2a3a;
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 260px;
+    flex-shrink: 0;
+  }
+
+  .table-header {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-header.teal  { background: #0d2a2a; color: #2dd4bf; border-bottom: 1px solid #134040; }
+  .table-header.purple { background: #1a1040; color: #a78bfa; border-bottom: 1px solid #2a1a5e; }
+
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot.teal   { background: #2dd4bf; }
+  .dot.purple { background: #a78bfa; }
+
+  .field-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 20px;
+    border-bottom: 1px solid #1a2030;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: background 0.15s;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-row:hover { background: #1c2438; }
+
+  .field-name { color: #cbd5e1; font-weight: 500; }
+  .field-type { color: #475569; font-size: 11px; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+  .badge.pk   { background: #1a3a1a; color: #4ade80; border: 1px solid #166534; }
+  .badge.fk   { background: #2a1a3a; color: #c084fc; border: 1px solid #581c87; }
+  .badge.enum { background: #1a2a3a; color: #60a5fa; border: 1px solid #1e3a5f; }
+
+  /* ── Connector ── */
+  .connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    padding-top: 60px;
+    flex-shrink: 0;
+    gap: 4px;
+  }
+
+  .rel-line {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, #2dd4bf33, #a78bfa33);
+    position: relative;
+  }
+  .rel-line::before {
+    content: '1';
+    position: absolute;
+    left: -10px;
+    top: -10px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #2dd4bf;
+    font-weight: 500;
+  }
+  .rel-line::after {
+    content: 'many';
+    position: absolute;
+    right: -26px;
+    top: -10px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #a78bfa;
+    font-weight: 500;
+  }
+
+  .arrow-head {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid #a78bfa44;
+    margin-left: -1px;
+    align-self: flex-end;
+    margin-top: -11px;
+  }
+
+  /* ── Examples section ── */
+  .examples {
+    max-width: 900px;
+    margin: 48px auto 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .example-card {
+    background: #161b27;
+    border: 1px solid #1e2a3a;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .example-header {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 1px solid #1e2a3a;
+  }
+
+  .example-body {
+    padding: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 1.9;
+    color: #94a3b8;
+  }
+
+  .example-body .key   { color: #64748b; }
+  .example-body .val   { color: #e2e8f0; }
+  .example-body .val.money { color: #4ade80; }
+  .example-body .val.debit  { color: #f87171; }
+  .example-body .val.credit { color: #34d399; }
+  .example-body .val.muted  { color: #64748b; }
+
+  .tx-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #1a2030;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .tx-row:last-child { border-bottom: none; }
+
+  .tx-type {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    width: 50px;
+    text-align: center;
+  }
+  .tx-type.debit  { background: #2a1010; color: #f87171; border: 1px solid #7f1d1d; }
+  .tx-type.credit { background: #0a2a1a; color: #34d399; border: 1px solid #065f46; }
+
+  .tx-info { flex: 1; }
+  .tx-desc { color: #cbd5e1; }
+  .tx-snapshot { color: #475569; font-size: 11px; margin-top: 2px; }
+  .tx-amount { font-weight: 500; }
+  .tx-amount.debit  { color: #f87171; }
+  .tx-amount.credit { color: #34d399; }
+
+  .note {
+    max-width: 900px;
+    margin: 24px auto 0;
+    background: #0d1a2a;
+    border: 1px solid #1e3a5f;
+    border-left: 3px solid #3b82f6;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.7;
+  }
+  .note strong { color: #93c5fd; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<h1>Wallet API — Data Model</h1>
+
+<div class="diagram">
+
+  <!-- Account table -->
+  <div class="table-card">
+    <div class="table-header teal">
+      <span class="dot teal"></span>
+      Account
+    </div>
+    <div class="field-row">
+      <span class="field-name">id</span>
+      <span class="field-type">guid <span class="badge pk">PK</span></span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">owner</span>
+      <span class="field-type">string</span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">balance</span>
+      <span class="field-type">decimal</span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">createdAt</span>
+      <span class="field-type">datetime</span>
+    </div>
+  </div>
+
+  <!-- Connector -->
+  <div class="connector">
+    <div style="display:flex;align-items:center;width:96px;position:relative;">
+      <div class="rel-line" style="width:96px;"></div>
+    </div>
+    <div style="font-size:10px;color:#334155;font-family:'IBM Plex Mono',monospace;margin-top:8px;">has many</div>
+  </div>
+
+  <!-- Transaction table -->
+  <div class="table-card">
+    <div class="table-header purple">
+      <span class="dot purple"></span>
+      Transaction
+    </div>
+    <div class="field-row">
+      <span class="field-name">id</span>
+      <span class="field-type">guid <span class="badge pk">PK</span></span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">accountId</span>
+      <span class="field-type">guid <span class="badge fk">FK</span></span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">type</span>
+      <span class="field-type"><span class="badge enum">credit | debit</span></span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">amount</span>
+      <span class="field-type">decimal · always +ve</span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">description</span>
+      <span class="field-type">string</span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">balanceBefore</span>
+      <span class="field-type">decimal</span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">balanceAfter</span>
+      <span class="field-type">decimal</span>
+    </div>
+    <div class="field-row">
+      <span class="field-name">createdAt</span>
+      <span class="field-type">datetime</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Example data -->
+<div class="examples">
+
+  <div class="example-card">
+    <div class="example-header">Example account</div>
+    <div class="example-body">
+      <div><span class="key">id:        </span><span class="val">3f9a-bc12-…</span></div>
+      <div><span class="key">owner:     </span><span class="val">Jane Smith</span></div>
+      <div><span class="key">balance:   </span><span class="val money">$1,250.00</span></div>
+      <div><span class="key">createdAt: </span><span class="val muted">2026-01-10T09:00:00Z</span></div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">Example transactions for that account</div>
+    <div class="tx-row">
+      <span class="tx-type debit">debit</span>
+      <div class="tx-info">
+        <div class="tx-desc">Coffee shop</div>
+        <div class="tx-snapshot">$1,300.00 → $1,250.00</div>
+      </div>
+      <span class="tx-amount debit">−$50.00</span>
+    </div>
+    <div class="tx-row">
+      <span class="tx-type credit">credit</span>
+      <div class="tx-info">
+        <div class="tx-desc">Payroll deposit</div>
+        <div class="tx-snapshot">$800.00 → $1,300.00</div>
+      </div>
+      <span class="tx-amount credit">+$500.00</span>
+    </div>
+    <div class="tx-row">
+      <span class="tx-type debit">debit</span>
+      <div class="tx-info">
+        <div class="tx-desc">Online purchase</div>
+        <div class="tx-snapshot">$1,050.00 → $800.00</div>
+      </div>
+      <span class="tx-amount debit">−$250.00</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">
+  <strong>Key design decisions:</strong>
+  &nbsp;·&nbsp; <strong>Transactions are immutable</strong> — never edited or deleted, only countered by new entries.
+  &nbsp;·&nbsp; <strong>Amount is always positive</strong> — direction comes from <code>type</code>, not a negative sign.
+  &nbsp;·&nbsp; <strong>Balance is snapshotted</strong> on every transaction (<code>balanceBefore</code> / <code>balanceAfter</code>) so history is self-verifiable without replaying all records.
+</div>
+
+</body>
+</html>
