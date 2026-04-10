@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TransactionAPI.Models;
 using TransactionAPI.Data;
 
-namespace TransactionAPI.Contollers;
+namespace TransactionAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
