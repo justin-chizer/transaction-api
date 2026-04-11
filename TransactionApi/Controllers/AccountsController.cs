@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TransactionAPI.Models;
-using TransactionAPI.Data;
+using TransactionApi.Models;
+using TransactionApi.Data;
 
-namespace TransactionAPI.Controllers;
+namespace TransactionApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

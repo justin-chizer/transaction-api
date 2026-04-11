@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TransactionAPI.Models;
-using TransactionAPI.Data;
+using TransactionApi.Models;
+using TransactionApi.Data;
 
-namespace TransactionAPI.Controllers;
+namespace TransactionApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -33,7 +33,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("{accountId}/credit")]
-    public async Task<ActionResult<Transaction>> Credit(Guid accountId, decimal amount, string description)
+    public async Task<ActionResult<Transaction>> Credit(Guid accountId, [FromBody] TransactionRequest request)
     {
         var account = await _context.Accounts.FindAsync(accountId);
 
@@ -47,10 +47,10 @@ public class TransactionsController : ControllerBase
             Id = Guid.NewGuid(),
             AccountId = accountId,
             Type = TransactionType.Credit,
-            Amount = amount,
-            Description = description,
+            Amount = request.Amount,
+            Description = request.Description,
             BalanceBefore = account.Balance,
-            BalanceAfter = account.Balance + amount,
+            BalanceAfter = account.Balance + request.Amount,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -62,7 +62,7 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("{accountId}/debit")]
-    public async Task<ActionResult<Transaction>> Debit(Guid accountId, decimal amount, string description)
+    public async Task<ActionResult<Transaction>> Debit(Guid accountId, [FromBody] TransactionRequest request)
     {
         var account = await _context.Accounts.FindAsync(accountId);
 
@@ -71,7 +71,7 @@ public class TransactionsController : ControllerBase
             return NotFound();
         }
 
-        if (amount > account.Balance)
+        if (request.Amount > account.Balance)
         {
             return BadRequest("Insufficient funds.");
         }
@@ -81,10 +81,10 @@ public class TransactionsController : ControllerBase
             Id = Guid.NewGuid(),
             AccountId = accountId,
             Type = TransactionType.Debit,
-            Amount = amount,
-            Description = description,
+            Amount = request.Amount,
+            Description = request.Description,
             BalanceBefore = account.Balance,
-            BalanceAfter = account.Balance - amount,
+            BalanceAfter = account.Balance - request.Amount,
             CreatedAt = DateTime.UtcNow
         };
 

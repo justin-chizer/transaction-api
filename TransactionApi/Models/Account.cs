@@ -1,4 +1,4 @@
-namespace TransactionAPI.Models;
+namespace TransactionApi.Models;
 
 public class Account
 {

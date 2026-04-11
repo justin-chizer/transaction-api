@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TransactionAPI.Models;
+using TransactionApi.Models;
 
-namespace TransactionAPI.Data;
+namespace TransactionApi.Data;
 
 public class BankingDbContext : DbContext
 {
