@@ -1,4 +1,5 @@
 const fs = require('fs');
+const yaml = require('js-yaml');
 
 const spec = JSON.parse(fs.readFileSync('openapi.3.1.json', 'utf8'));
 
@@ -14,15 +15,9 @@ function fixTypes(obj) {
         return;
     }
 
-    // Fix type: ["number", "string"] -> type: "number"
-    // Fix type: ["null", "string"] -> type: "string", nullable: true
-    // Fix type: ["null", "integer", "string"] -> type: "integer", nullable: true
     if (Array.isArray(obj.type)) {
         const types = obj.type.filter(t => t !== 'null');
         const isNullable = obj.type.includes('null');
-
-        // Pick the most specific non-null type
-        // Prefer number/integer over string
         const preferred = types.find(t => t !== 'string') || types[0];
         obj.type = preferred;
 
@@ -30,7 +25,6 @@ function fixTypes(obj) {
             obj.nullable = true;
         }
 
-        // Remove pattern from numeric types - it's a 3.1 artifact
         if (obj.type === 'number' || obj.type === 'integer') {
             delete obj.pattern;
         }
@@ -48,5 +42,10 @@ function fixTypes(obj) {
 
 fixTypes(spec);
 
+// Write JSON
 fs.writeFileSync('openapi.json', JSON.stringify(spec, null, 2));
-console.log('✅ Converted to OpenAPI 3.0.3');
+console.log('✅ Converted to OpenAPI 3.0.3 (JSON)');
+
+// Write YAML
+fs.writeFileSync('openapi.yaml', yaml.dump(spec, { lineWidth: -1 }));
+console.log('✅ Converted to OpenAPI 3.0.3 (YAML)');
