@@ -31,6 +31,7 @@ public class TransactionsController : ControllerBase
         }
 
         return await _context.Transactions
+            .AsNoTracking()
             .Where(t => t.AccountId == accountId)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
