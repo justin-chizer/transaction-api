@@ -52,3 +52,15 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Local development settings with credentials
+appsettings.Development.json
+
+# Node
+node_modules/
+
+# OpenAPI intermediate file (generated, not source)
+TransactionApi/openapi.3.1.json
+
+# macOS
+.DS_Store
