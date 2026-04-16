@@ -7,6 +7,7 @@ namespace TransactionApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class TransactionsController : ControllerBase
 {
     private readonly BankingDbContext _context;
@@ -17,9 +18,12 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpGet("{accountId}")]
+    [ProducesResponseType(typeof(IEnumerable<Transaction>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions(Guid accountId)
     {
-        var account = await _context.Accounts.FindAsync(accountId);
+        var account = await _context.Accounts.AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == accountId);
         
         if (account == null)
         {
@@ -33,6 +37,9 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("{accountId}/credit")]
+    [ProducesResponseType(typeof(Transaction), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Transaction>> Credit(Guid accountId, [FromBody] TransactionRequest request)
     {
         var account = await _context.Accounts.FindAsync(accountId);
@@ -62,6 +69,9 @@ public class TransactionsController : ControllerBase
     }
 
     [HttpPost("{accountId}/debit")]
+    [ProducesResponseType(typeof(Transaction), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Transaction>> Debit(Guid accountId, [FromBody] TransactionRequest request)
     {
         var account = await _context.Accounts.FindAsync(accountId);
