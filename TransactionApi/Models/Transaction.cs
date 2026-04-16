@@ -1,5 +1,7 @@
+using System.Text.Json.Serialization;
 namespace TransactionApi.Models;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TransactionType
 {
     Credit,
@@ -17,5 +19,6 @@ public class Transaction
     public decimal BalanceAfter { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    [JsonIgnore]
     public Account Account { get; set; } = null!;
 }
