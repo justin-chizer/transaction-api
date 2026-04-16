@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TransactionAPI.Models;
-using TransactionAPI.Data;
+using TransactionApi.Models;
+using TransactionApi.Data;
 
-namespace TransactionAPI.Controllers;
+namespace TransactionApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class AccountsController : ControllerBase
 {
     private readonly BankingDbContext _context;
@@ -17,15 +18,19 @@ public class AccountsController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<Account>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<Account>>> GetAccounts()
     {
-        return await _context.Accounts.ToListAsync();
+        return await _context.Accounts.AsNoTracking().ToListAsync();
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(Account), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Account>> GetAccount(Guid id)
     {
-        var account = await _context.Accounts.FindAsync(id);
+        var account = await _context.Accounts.AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id);
 
         if (account == null)
         {
@@ -36,6 +41,8 @@ public class AccountsController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(Account), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Account>> CreateAccount(Account account)
     {
         account.Id = Guid.NewGuid();
