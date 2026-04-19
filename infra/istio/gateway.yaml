@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: transaction-api-gateway
+  namespace: dev
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: MUTUAL
+        minProtocolVersion: TLSV1_3
+        credentialName: cloudflare-origin-cert
+        caCertificates: /etc/ssl/certs/cloudflare-authenticated-origin-pull-ca.pem
+      hosts:
+        - "chizer.dev.nationsbenefits.com"
