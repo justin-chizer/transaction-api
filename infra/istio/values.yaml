@@ -1,42 +1,41 @@
-gateways:
-  istio-ingressgateway:
-    enabled: true
-    name: istio-ingressgateway
-    namespace: istio-ingress
+name: istio-ingressgateway
 
-    service:
-      type: LoadBalancer
-      annotations:
-        service.beta.kubernetes.io/azure-load-balancer-internal: "false"
-      ports:
-        - name: https
-          port: 443
-          targetPort: 8443
-        - name: status-port
-          port: 15021
-          targetPort: 15021
+service:
+  type: LoadBalancer
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+  ports:
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP
+    - name: status-port
+      port: 15021
+      targetPort: 15021
+      protocol: TCP
 
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 500m
-        memory: 256Mi
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
 
-    autoscaleEnabled: true
-    autoscaleMin: 2
-    autoscaleMax: 5
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
 
-    affinity:
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: app
-                    operator: In
-                    values:
-                      - istio-ingressgateway
-              topologyKey: kubernetes.io/hostname
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - istio-ingressgateway
+          topologyKey: kubernetes.io/hostname
