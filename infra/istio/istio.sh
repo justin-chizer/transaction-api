@@ -13,3 +13,7 @@ CREATE USER [aks-chizer-agentpool] FROM EXTERNAL PROVIDER;
 ALTER ROLE db_datareader ADD MEMBER [aks-chizer-agentpool];
 ALTER ROLE db_datawriter ADD MEMBER [aks-chizer-agentpool];
 ALTER ROLE db_ddladmin ADD MEMBER [aks-chizer-agentpool]; # This is because the cluster needs to run ef migration
+
+
+#Helm for the transaction-api
+helm install transaction-api infra/helm/transaction-api -n dev --set connectionString="Server=sql-server-chizer.database.windows.net;Database=BankingDb;Authentication=Active Directory Managed Identity;Encrypt=True;"
