@@ -1,0 +1,44 @@
+replicaCount: 2
+
+image:
+  repository: acrchizer.azurecr.io/transaction-api
+  tag: "1.4.0"
+  pullPolicy: IfNotPresent
+
+namespace: dev
+
+environment: Production
+
+connectionString: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 10
+  cpuUtilization: 70
+  memoryUtilization: 80
+
+istio:
+  host: chizer.dev.nationsbenefits.com
+
+probes:
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 3

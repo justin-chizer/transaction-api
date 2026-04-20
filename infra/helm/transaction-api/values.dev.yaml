@@ -1,0 +1,7 @@
+replicaCount: 1
+
+environment: Development
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
