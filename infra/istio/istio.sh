@@ -17,3 +17,11 @@ ALTER ROLE db_ddladmin ADD MEMBER [aks-chizer-agentpool]; # This is because the 
 
 #Helm for the transaction-api
 helm install transaction-api infra/helm/transaction-api -n dev --set connectionString="Server=sql-server-chizer.database.windows.net;Database=BankingDb;Authentication=Active Directory Managed Identity;Encrypt=True;"
+
+
+#Secrets for gateway
+kubectl create secret generic cloudflare-origin-cert \
+  -n istio-ingress \
+  --from-file=tls.crt=origin.crt \
+  --from-file=tls.key=origin.key \
+  --from-file=ca.crt=authenticated_origin_pull_ca.pem
