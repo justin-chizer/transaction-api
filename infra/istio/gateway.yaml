@@ -12,7 +12,7 @@ spec:
         name: https
         protocol: HTTPS
       tls:
-        mode: MUTUAL
+        mode: SIMPLE
         minProtocolVersion: TLSV1_3
         credentialName: cloudflare-origin-cert
       hosts:
