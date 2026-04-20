@@ -11,6 +11,14 @@ spec:
   http:
     - match:
         - uri:
+            exact: /health
+      route:
+        - destination:
+            host: transaction-api
+            port:
+              number: {{ .Values.service.port }}
+    - match:
+        - uri:
             prefix: /api
       route:
         - destination:
