@@ -22,8 +22,8 @@ ALTER ROLE db_datareader ADD MEMBER [<managed-identity-display-name>];
 ALTER ROLE db_datawriter ADD MEMBER [<managed-identity-display-name>];
 "
 
-curl -LO https://github.com/microsoft/go-sqlcmd/releases/download/v1.8.0/sqlcmd-linux-amd64.tar.gz
-tar -xzf sqlcmd-linux-amd64.tar.gz
+curl -LO https://github.com/microsoft/go-sqlcmd/releases/download/v1.8.2/sqlcmd-v1.8.2-linux-amd64.tar.bz2
+tar -xjf sqlcmd-v1.8.2-linux-amd64.tar.bz2
 chmod +x sqlcmd
 
 ./sqlcmd -S <your-server>.database.windows.net \
