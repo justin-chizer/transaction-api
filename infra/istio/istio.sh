@@ -12,3 +12,4 @@ k create namespace dev
 CREATE USER [aks-chizer-agentpool] FROM EXTERNAL PROVIDER;
 ALTER ROLE db_datareader ADD MEMBER [aks-chizer-agentpool];
 ALTER ROLE db_datawriter ADD MEMBER [aks-chizer-agentpool];
+ALTER ROLE db_ddladmin ADD MEMBER [aks-chizer-agentpool]; # This is because the cluster needs to run ef migration
