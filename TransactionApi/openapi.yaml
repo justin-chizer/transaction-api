@@ -3,7 +3,7 @@ info:
   title: TransactionApi | v1
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/
+  - url: https://chizer.dev.nationsbenefits.com/
 paths:
   /api/accounts:
     get:
