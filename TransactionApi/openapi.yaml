@@ -5,7 +5,7 @@ info:
 servers:
   - url: http://localhost:8080/
 paths:
-  /api/Accounts:
+  /api/accounts:
     get:
       tags:
         - Accounts
@@ -40,7 +40,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-  /api/Accounts/{id}:
+  /api/accounts/{id}:
     get:
       tags:
         - Accounts
@@ -64,7 +64,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-  /api/Transactions/{accountId}:
+  /api/transactions/{accountId}:
     get:
       tags:
         - Transactions
@@ -90,7 +90,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-  /api/Transactions/{accountId}/credit:
+  /api/transactions/{accountId}/credit:
     post:
       tags:
         - Transactions
@@ -126,7 +126,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetails'
-  /api/Transactions/{accountId}/debit:
+  /api/transactions/{accountId}/debit:
     post:
       tags:
         - Transactions

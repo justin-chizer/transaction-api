@@ -10,7 +10,7 @@
     }
   ],
   "paths": {
-    "/api/Accounts": {
+    "/api/accounts": {
       "get": {
         "tags": [
           "Accounts"
@@ -79,7 +79,7 @@
         }
       }
     },
-    "/api/Accounts/{id}": {
+    "/api/accounts/{id}": {
       "get": {
         "tags": [
           "Accounts"
@@ -119,7 +119,7 @@
         }
       }
     },
-    "/api/Transactions/{accountId}": {
+    "/api/transactions/{accountId}": {
       "get": {
         "tags": [
           "Transactions"
@@ -162,7 +162,7 @@
         }
       }
     },
-    "/api/Transactions/{accountId}/credit": {
+    "/api/transactions/{accountId}/credit": {
       "post": {
         "tags": [
           "Transactions"
@@ -232,7 +232,7 @@
         }
       }
     },
-    "/api/Transactions/{accountId}/debit": {
+    "/api/transactions/{accountId}/debit": {
       "post": {
         "tags": [
           "Transactions"
