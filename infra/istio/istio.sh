@@ -32,3 +32,6 @@ kubectl create secret generic cloudflare-origin-cert \
 helm repo add cloudflare https://cloudflare.github.io/helm-charts
 helm repo update
 kubectl create namespace cf-tunnel
+helm install cloudflare-tunnel cloudflare/cloudflare-tunnel \
+  -n cf-tunnel \
+  -f infra/helm/cloudflare-tunnel/values.yaml
