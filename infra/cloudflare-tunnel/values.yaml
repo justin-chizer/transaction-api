@@ -1,0 +1,24 @@
+replicaCount: 2
+
+cloudflare:
+  tunnel:
+    existingSecret: cloudflare-tunnel-token
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - cloudflared
+        topologyKey: kubernetes.io/hostname
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
