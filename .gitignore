@@ -64,3 +64,8 @@ TransactionApi/openapi.3.1.json
 
 # macOS
 .DS_Store
+
+# mTLS
+.pem
+.crt
+.key
