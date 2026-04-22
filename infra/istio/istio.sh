@@ -35,3 +35,6 @@ kubectl create namespace cf-tunnel
 helm install cloudflare-tunnel cloudflare/cloudflare-tunnel \
   -n cf-tunnel \
   -f infra/helm/cloudflare-tunnel/values.yaml
+
+  2026-04-22T21:51:20Z ERR  error="Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp: lookup istio-gateway.istio-ingress.svc.cluster.local on 10.0.0.10:53: no such host" connIndex=3 event=1 ingressRule=0 originService=https://istio-gateway.istio-ingress.svc.cluster.local:443
+2026-04-22T21:51:20Z ERR Request failed error="Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp: lookup istio-gateway.istio-ingress.svc.cluster.local on 10.0.0.10:53: no such host" connIndex=3 dest=https://chizer.dev.nationsbenefits.com/api/accounts event=0 ip=198.41.192.37 type=http
