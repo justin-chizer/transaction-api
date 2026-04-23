@@ -26,4 +26,4 @@ kubectl create secret generic cloudflare-origin-cert \
   --from-file=tls.key=origin.key \
   --from-file=ca.crt=authenticated_origin_pull_ca.pem
   
-  # Watch out for case sensitivity on Schema Validation
+# Watch out for case sensitivity on Schema Validation
