@@ -57,3 +57,8 @@ WARN[0000] tlsAuth.domains option could be removed in the next releases, it's re
 running (4m01.2s), 000/100 VUs, 5138 complete and 0 interrupted iterations
 default ✓ [======================================] 000/100 VUs  4m0s
 ERRO[0241] thresholds on metrics 'http_req_duration' have been crossed
+
+
+2 pods for .net, cloudflared, and istio.
+4 core SQL db.
+4 core, 3 node AKS cluster.
