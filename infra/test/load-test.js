@@ -15,8 +15,8 @@ export let options = {
   },
   tlsClientCerts: [
     {
-      certPath: './certs/client.crt',
-      keyPath: './certs/client.key',
+      certPath: './../mtls/cloudflare.crt',
+      keyPath: './../mtls/cloudflare.key',
       domains: ['chizer.dev.nationsbenefits.com'],
     },
   ],
