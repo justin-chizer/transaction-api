@@ -1,0 +1,59 @@
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: load-test.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 100 max VUs, 4m30s max duration (incl. graceful stop):
+              * default: Up to 100 looping VUs for 4m0s over 5 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+WARN[0000] tlsAuth.domains option could be removed in the next releases, it's recommended to leave it empty and let k6 automatically detect from the provided certificate. It follows the Go's NameToCertificate deprecation - https://pkg.go.dev/crypto/tls@go1.17#Config.
+
+
+  █ THRESHOLDS
+
+    http_req_duration
+    ✗ 'p(95)<500' p(95)=2.4s
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 20552   85.211664/s
+    checks_succeeded...: 100.00% 20552 out of 20552
+    checks_failed......: 0.00%   0 out of 20552
+
+    ✓ GET accounts 200
+    ✓ GET transactions 200
+    ✓ POST credit 201
+    ✓ POST debit 201
+
+    HTTP
+    http_req_duration..............: avg=434.01ms min=89.52ms med=142.54ms max=12.62s p(90)=1.2s  p(95)=2.4s
+      { expected_response:true }...: avg=434.01ms min=89.52ms med=142.54ms max=12.62s p(90)=1.2s  p(95)=2.4s
+    http_req_failed................: 0.00%  0 out of 20553
+    http_reqs......................: 20553  85.21581/s
+
+    EXECUTION
+    iteration_duration.............: avg=2.74s    min=1.41s   med=2.08s    max=14.56s p(90)=4.75s p(95)=5.38s
+    iterations.....................: 5138   21.302916/s
+    vus............................: 4      min=1          max=100
+    vus_max........................: 100    min=100        max=100
+
+    NETWORK
+    data_received..................: 6.5 GB 27 MB/s
+    data_sent......................: 36 MB  147 kB/s
+
+
+
+
+running (4m01.2s), 000/100 VUs, 5138 complete and 0 interrupted iterations
+default ✓ [======================================] 000/100 VUs  4m0s
+ERRO[0241] thresholds on metrics 'http_req_duration' have been crossed
