@@ -1,7 +1,59 @@
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using TransactionApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var serviceName = "transaction-api";
+var serviceVersion = "1.4.0";
+var otlpEndpoint = builder.Configuration["Otel:Endpoint"] ?? "http://localhost:4317";
+
+var resourceBuilder = ResourceBuilder.CreateDefault()
+    .AddService(serviceName, serviceVersion: serviceVersion)
+    .AddAttributes(new Dictionary<string, object>
+    {
+        ["deployment.environment"] = builder.Environment.EnvironmentName.ToLower(),
+        ["k8s.cluster.name"] = "aks-chizer",
+    });
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .SetResourceBuilder(resourceBuilder)
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.RecordException = true;
+            options.Filter = ctx => ctx.Request.Path != "/health";
+        })
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(otlpEndpoint);
+        }))
+    .WithMetrics(metrics => metrics
+        .SetResourceBuilder(resourceBuilder)
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(otlpEndpoint);
+        }));
+
+builder.Logging.ClearProviders();
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.SetResourceBuilder(resourceBuilder);
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+    logging.AddOtlpExporter(options =>
+    {
+        options.Endpoint = new Uri(otlpEndpoint);
+    });
+});
 
 // Add services to the container.
 
