@@ -108,14 +108,10 @@ transaction-api/
   │   │   ├── Transaction.cs
   │   │   └── TransactionRequest.cs
   │   ├── Dockerfile
-  │   ├── Program.cs
+  │   ├── Program.cs              ← AddOpenApi configured to emit 3.0
   │   ├── appsettings.json
-  │   ├── openapi.yaml            ← uploaded to Cloudflare API Shield
-  │   ├── openapi.json
-  │   ├── openapi.3.1.json        ← raw generated spec
-  │   └── convert-openapi.js      ← converts 3.1 → 3.0, outputs JSON + YAML
-  ├── dev.sh                      ← local dev reset script
-  └── openapi-format.config.json
+  │   └── openapi.json            ← OpenAPI 3.0.3, uploaded to Cloudflare API Shield
+  └── dev.sh                      ← local dev reset script
 ```
 
 ---
@@ -126,12 +122,10 @@ transaction-api/
 
 - .NET 10 SDK
 - Rancher Desktop (containerd runtime)
-- Node.js
 - `dotnet-ef` CLI tools
 
 ```bash
 dotnet tool install --global dotnet-ef
-npm install -g openapi-format
 ```
 
 ### Run locally
@@ -171,30 +165,28 @@ API will be available at `http://localhost:5297`.
 
 ## OpenAPI Spec
 
-The spec is generated from the controllers and converted to OpenAPI 3.0.3 for Cloudflare API Shield.
+The spec is generated directly from the controllers as OpenAPI 3.0.3. `Program.cs` configures `AddOpenApi` to emit 3.0, so no conversion step is needed.
+
+```csharp
+builder.Services.AddOpenApi(options =>
+{
+    options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+});
+```
 
 ### Regenerate the spec
 
-**1. Start the API and export the raw spec:**
+Start the API and save the document:
 
 ```bash
-curl http://localhost:8080/openapi/v1.json -o TransactionApi/openapi.3.1.json
+curl http://localhost:8080/openapi/v1.json -o TransactionApi/openapi.json
 ```
 
-**2. Convert to OpenAPI 3.0.3 (JSON + YAML):**
-
-```bash
-cd TransactionApi
-node convert-openapi.js
-```
-
-This outputs:
-- `openapi.json` — OpenAPI 3.0.3 in JSON format
-- `openapi.yaml` — OpenAPI 3.0.3 in YAML format, ready for Cloudflare API Shield
+That single file is what the dev team consumes for client generation, what's uploaded to Cloudflare API Shield, and what the Redoc docs render (`infra/rdocly/openapi.json`).
 
 ### Why OpenAPI 3.0 and not 3.1?
 
-Cloudflare API Shield and most enterprise API gateways are built against OpenAPI 3.0. The .NET 10 generator outputs 3.1 natively, so the conversion script handles the downgrade automatically.
+Cloudflare API Shield and most enterprise API gateways are built against OpenAPI 3.0. The .NET 10 generator outputs 3.1 by default, so `Program.cs` sets `OpenApiVersion` to `OpenApi3_0` — the framework's serializer handles the downgrade (including converting `type: [..., "null"]` to `nullable: true`).
 
 ---
 
@@ -237,7 +229,7 @@ TLS is terminated at Cloudflare and re-established by Istio. The .NET pod operat
 
 ### Cloudflare API Shield
 
-The `openapi.yaml` is uploaded to Cloudflare API Shield which validates every incoming request at the edge against the schema before it reaches AKS. Invalid requests are rejected by Cloudflare — the pod never sees them.
+The `openapi.json` is uploaded to Cloudflare API Shield which validates every incoming request at the edge against the schema before it reaches AKS. Invalid requests are rejected by Cloudflare — the pod never sees them.
 
 ---
 
