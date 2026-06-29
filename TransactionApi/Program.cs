@@ -10,6 +10,24 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {
     options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+
+    // Strip duplicate/wildcard request-body media types that ASP.NET adds by default.
+    // Cloudflare API Shield's schema validator doesn't handle the application/*+json
+    // wildcard well; text/json and text/plain are just redundant noise.
+    options.AddDocumentTransformer((doc, ctx, ct) =>
+    {
+        var operations = doc.Paths.Values
+            .SelectMany(p => p.Operations?.Values ?? Enumerable.Empty<Microsoft.OpenApi.OpenApiOperation>());
+
+        foreach (var op in operations)
+        {
+            var content = op.RequestBody?.Content;
+            content?.Remove("text/json");
+            content?.Remove("application/*+json");
+            content?.Remove("text/plain");
+        }
+        return Task.CompletedTask;
+    });
 });
 builder.Services.AddHealthChecks();
 builder.Services.AddRouting(options =>
