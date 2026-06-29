@@ -108,9 +108,10 @@ transaction-api/
   │   │   ├── Transaction.cs
   │   │   └── TransactionRequest.cs
   │   ├── Dockerfile
-  │   ├── Program.cs              ← AddOpenApi configured to emit 3.0
+  │   ├── Program.cs              ← calls builder.Services.AddApiShieldReady()
+  │   ├── ApiShieldExtensions.cs  ← drop-in API Shield config (OpenAPI 3.0 + lowercase routing)
   │   ├── appsettings.json
-  │   └── openapi.json            ← OpenAPI 3.0.3, uploaded to Cloudflare API Shield
+  │   └── openapi.json            ← OpenAPI 3.0, uploaded to Cloudflare API Shield
   └── dev.sh                      ← local dev reset script
 ```
 
@@ -165,13 +166,10 @@ API will be available at `http://localhost:5297`.
 
 ## OpenAPI Spec
 
-The spec is generated directly from the controllers as OpenAPI 3.0.3. `Program.cs` configures `AddOpenApi` to emit 3.0, so no conversion step is needed.
+The spec is generated directly from the controllers as OpenAPI 3.0, ready for Cloudflare API Shield — no conversion script. All the configuration lives in one drop-in file, [`ApiShieldExtensions.cs`](TransactionApi/ApiShieldExtensions.cs), and `Program.cs` wires it up with a single call:
 
 ```csharp
-builder.Services.AddOpenApi(options =>
-{
-    options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
-});
+builder.Services.AddApiShieldReady();
 ```
 
 ### Regenerate the spec
@@ -184,9 +182,34 @@ curl http://localhost:8080/openapi/v1.json -o TransactionApi/openapi.json
 
 That single file is what the dev team consumes for client generation, what's uploaded to Cloudflare API Shield, and what the Redoc docs render (`infra/rdocly/openapi.json`).
 
-### Why OpenAPI 3.0 and not 3.1?
+### Make another .NET 10 API API-Shield-ready
 
-Cloudflare API Shield and most enterprise API gateways are built against OpenAPI 3.0. The .NET 10 generator outputs 3.1 by default, so `Program.cs` sets `OpenApiVersion` to `OpenApi3_0` — the framework's serializer handles the downgrade (including converting `type: [..., "null"]` to `nullable: true`).
+`ApiShieldExtensions.cs` is self-contained and has no app-specific code, so adopting it elsewhere is two steps:
+
+1. Copy `ApiShieldExtensions.cs` into the target project.
+2. Call `builder.Services.AddApiShieldReady();` in its `Program.cs`.
+
+That's it — no extra `using` (the file lives in the `Microsoft.Extensions.DependencyInjection` namespace). `AddApiShieldReady()` bundles both things API Shield requires; the pieces are also exposed individually (`AddApiShieldOpenApi()`, `AddLowercaseRouting()`) if a service only needs one.
+
+> Set the API's real `servers` URL before uploading the schema to Cloudflare — by default it's the request URL (`localhost:8080`). Pass a transformer to the optional callback:
+> ```csharp
+> builder.Services.AddApiShieldReady(o => o.AddDocumentTransformer((doc, _, _) =>
+> {
+>     doc.Servers = [new() { Url = "https://api.example.com" }];
+>     return Task.CompletedTask;
+> }));
+> ```
+
+### What `AddApiShieldReady()` does, and why
+
+API Shield validates each incoming request against the uploaded schema at the edge, so the schema must be both **3.0** and an **exact match** for what the API serves:
+
+| Step | Reason |
+|---|---|
+| Emit **OpenAPI 3.0** (not the .NET 10 default 3.1) | API Shield and most gateways are built against 3.0. The framework serializer handles the downgrade, including `type: [..,"null"]` → `nullable: true`. |
+| Strip `text/json`, `application/*+json`, `text/plain` request bodies | The `application/*+json` wildcard trips up strict schema validators; the others are redundant noise. |
+| Give `decimal`/enum schemas an explicit `type` | The .NET generator omits `type` on those (and adds a meaningless regex `pattern` to decimals), which breaks client generators and can cause valid payloads to be rejected. |
+| **Lowercase routing** (`LowercaseUrls` + `LowercaseQueryStrings`) | API Shield matches request paths to schema operations case-sensitively. The documented paths are lowercase, so the served paths must be too. |
 
 ---
 
