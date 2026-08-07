@@ -12,6 +12,22 @@ spec:
     metadata:
       labels:
         app: cloudflared
+      annotations:
+        # DataDog Autodiscovery — inert until the DataDog Agent is deployed with
+        # Autodiscovery enabled, at which point it scrapes cloudflared's Prometheus
+        # /metrics endpoint via the OpenMetrics integration.
+        ad.datadoghq.com/cloudflared.checks: |
+          {
+            "openmetrics": {
+              "instances": [
+                {
+                  "openmetrics_endpoint": "http://%%host%%:2000/metrics",
+                  "namespace": "cloudflared",
+                  "metrics": [".*"]
+                }
+              ]
+            }
+          }
     spec:
       containers:
         - name: cloudflared
@@ -19,6 +35,10 @@ spec:
           args:
             - tunnel
             - --no-autoupdate
+            # Expose the metrics/health server on all interfaces so the kubelet can
+            # probe /ready and the DataDog Agent can scrape /metrics.
+            - --metrics
+            - 0.0.0.0:2000
             - run
             - --token
             - $(TUNNEL_TOKEN)
@@ -28,6 +48,23 @@ spec:
                 secretKeyRef:
                   name: cloudflare-tunnel-token
                   key: token
+          ports:
+            - name: metrics
+              containerPort: 2000
+          # cloudflared serves /ready on the metrics port: 200 once it has an active
+          # edge connection, 503 otherwise.
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 10
+            periodSeconds: 30
           resources:
             requests:
               cpu: 100m

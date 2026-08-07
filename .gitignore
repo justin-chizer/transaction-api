@@ -64,3 +64,6 @@ infra/mtls
 .pem
 .crt
 .key
+
+# Cloudflare tunnel token — real secret manifest (the .example template is committed)
+infra/cloudflare-tunnel/secret.yaml
