@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -18,9 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection;
 ///      or otherwise-valid requests look non-conforming at the edge.
 ///
 /// The file lives in the Microsoft.Extensions.DependencyInjection namespace on purpose, so the
-/// methods appear on builder.Services with no extra <c>using</c> directives, and contains no
-/// app-specific logic, so it is safe to reuse verbatim across services. The two pieces are also
-/// exposed as individual methods if a service only needs one.
+/// method appears on builder.Services with no extra <c>using</c> directives, and contains no
+/// app-specific logic, so it is safe to reuse verbatim across services.
 /// </summary>
 public static class ApiShieldExtensions
 {
@@ -86,9 +86,11 @@ public static class ApiShieldExtensions
                     schema.Type = nullable ? JsonSchemaType.Integer | JsonSchemaType.Null : JsonSchemaType.Integer;
                     schema.Pattern = null;
                 }
-                else if (clrType.IsEnum && schema.Enum is { Count: > 0 })
+                else if (clrType.IsEnum && schema.Enum is { Count: > 0 } enumValues
+                         && enumValues[0] is JsonValue enumValue && enumValue.TryGetValue<string>(out _))
                 {
-                    // JsonStringEnumConverter emits the enum values but no "type".
+                    // Only string-serialized enums (JsonStringEnumConverter) are emitted without a
+                    // "type". Numeric enums already carry type: integer, so leave them untouched.
                     schema.Type = nullable ? JsonSchemaType.String | JsonSchemaType.Null : JsonSchemaType.String;
                 }
                 return Task.CompletedTask;
