@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>NationsBenefits API Documentation</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500,600,700|Roboto:300,400,500,700"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── NationsBenefits Brand Tokens ── */
+      :root {
+        --nb-navy:          #00497A;
+        --nb-navy-dark:     #003355;
+        --nb-navy-darkest:  #001D31;
+        --nb-navy-light:    #26648E;
+        --nb-navy-lightest: #5989A9;
+        --nb-coral:         #F2604A;
+        --nb-gray:          #808285;
+        --nb-cadet:         #B1B9C1;
+        --nb-athens:        #E9ECF0;
+        --nb-porcelain:     #F5F6F8;
+        --nb-woodsmoke:     #212121;
+        --nb-sky:           #7AD0F1;
+        --nb-white:         #FFFFFF;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Roboto', sans-serif;
+        background: var(--nb-porcelain);
+      }
+
+      /* ── Top Header Bar ── */
+      #nb-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: var(--nb-navy-darkest);
+        display: flex;
+        align-items: center;
+        padding: 0 28px;
+        z-index: 1000;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+        border-bottom: 3px solid var(--nb-coral);
+      }
+
+      #nb-header .logo-wrap {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        text-decoration: none;
+      }
+
+      #nb-header img.nb-logo {
+        height: 32px;
+        width: auto;
+        display: block;
+      }
+
+      #nb-header .divider {
+        width: 1px;
+        height: 28px;
+        background: rgba(255,255,255,0.2);
+      }
+
+      #nb-header .header-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--nb-cadet);
+      }
+
+      #nb-header .badge {
+        margin-left: auto;
+        background: var(--nb-coral);
+        color: white;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 20px;
+      }
+
+      /* ── Push content below fixed header ── */
+      #redoc-container {
+        padding-top: 64px;
+      }
+
+      /* ── Redoc Theme Overrides via CSS ── */
+
+      /* Sidebar */
+      .menu-content {
+        background: var(--nb-navy-darkest) !important;
+      }
+
+      /* Sidebar title / API name */
+      .api-info h1,
+      [class*="SidebarDivider"],
+      .menu-content h2 {
+        font-family: 'Montserrat', sans-serif !important;
+      }
+
+      /* Active sidebar item */
+      li[class*="active"] > label,
+      li[class*="active"] > a {
+        color: var(--nb-coral) !important;
+        border-left: 3px solid var(--nb-coral) !important;
+      }
+
+      /* HTTP method badges */
+      [class*="OperationBadge"],
+      [class*="HttpVerb"] {
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 700 !important;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- NationsBenefits Header -->
+    <div id="nb-header">
+      <a class="logo-wrap" href="https://www.nationsbenefits.com" target="_blank" rel="noopener">
+        <img
+          class="nb-logo"
+          src="https://cdn.prod.website-files.com/63c1c2e5fac44f00c3ae5864/645e914761054643a92f775f_NationsBenefits-logo-horiz-rev.svg"
+          alt="NationsBenefits"
+        />
+      </a>
+      <div class="divider"></div>
+      <span class="header-title">API Documentation</span>
+      <span class="badge">Developer Portal</span>
+    </div>
+
+    <!-- Redoc renders here -->
+    <div id="redoc-container"></div>
+
+    <script type="16d96479134fd308ef72cda8-text/javascript">
+      function initializeRedoc() {
+        const schemaFile = './openapi.json';
+        const options = {
+          untrustedSpec: true,
+          theme: {
+            colors: {
+              primary: {
+                main: '#F2604A'           /* Coral — links, active states, highlights */
+              },
+              success: {
+                main: '#B1DECA'           /* Sage Green */
+              },
+              warning: {
+                main: '#F2604A'
+              },
+              error: {
+                main: '#F2604A'
+              },
+              text: {
+                primary:   '#212121',     /* Woodsmoke */
+                secondary: '#646F7D'      /* Nevada */
+              },
+              border: {
+                dark:  '#B1B9C1',         /* Cadet Blue */
+                light: '#E9ECF0'          /* Athens Gray */
+              },
+              responses: {
+                success: { color: '#B1DECA', backgroundColor: '#f0faf5' },
+                error:   { color: '#F2604A', backgroundColor: '#fff3f1' },
+                redirect:{ color: '#7AD0F1', backgroundColor: '#f0f9ff' },
+                info:    { color: '#00497A', backgroundColor: '#f0f6fb' }
+              },
+              http: {
+                get:     '#26648E',
+                post:    '#00497A',
+                put:     '#5989A9',
+                delete:  '#F2604A',
+                patch:   '#7AD0F1',
+                head:    '#808285',
+                options: '#B1B9C1'
+              }
+            },
+            typography: {
+              fontSize:       '15px',
+              lineHeight:     '1.6',
+              fontFamily:     "'Roboto', sans-serif",
+              headings: {
+                fontFamily:   "'Montserrat', sans-serif",
+                fontWeight:   '600'
+              },
+              code: {
+                fontSize:     '13px',
+                fontFamily:   "'Roboto Mono', 'Courier New', monospace",
+                color:        '#F2604A',
+                backgroundColor: '#F5F6F8'
+              },
+              links: {
+                color:   '#F2604A',
+                visited: '#26648E',
+                hover:   '#003355'
+              }
+            },
+            sidebar: {
+              width:           '280px',
+              backgroundColor: '#001D31',     /* Darkest Navy */
+              textColor:       '#B1B9C1'      /* Cadet Blue — readable on dark bg */
+            },
+            logo: {
+              gutter: '20px'
+            },
+            rightPanel: {
+              backgroundColor: '#003355',     /* Dark Navy */
+              textColor:       '#E9ECF0'
+            },
+            codeBlock: {
+              backgroundColor: '#001D31'
+            }
+          },
+          logo: {
+            url: 'https://cdn.prod.website-files.com/63c1c2e5fac44f00c3ae5864/645e914761054643a92f775f_NationsBenefits-logo-horiz-rev.svg',
+            altText: 'NationsBenefits',
+            href: 'https://www.nationsbenefits.com'
+          },
+          scrollYOffset: 64,         /* offset for fixed header */
+          hideDownloadButton: false,
+          expandResponses: '200,201',
+          jsonSampleExpandLevel: 2,
+          hideSingleRequestSampleTab: true
+        };
+
+        Redoc.init(
+          schemaFile,
+          options,
+          document.getElementById('redoc-container')
+        );
+      }
+    </script>
+
+    <script
+      src="./redoc.standalone.js"
+      onload="initializeRedoc()"
+      type="16d96479134fd308ef72cda8-text/javascript"
+    ></script>
+
+    <script
+      src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js"
+      data-cf-settings="16d96479134fd308ef72cda8-|49"
+      defer
+    ></script>
+  </body>
+</html>

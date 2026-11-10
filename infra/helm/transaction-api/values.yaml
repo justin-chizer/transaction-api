@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: acrchizer.azurecr.io/transaction-api
-  tag: "1.4.4"
+  tag: "1.4.8"
   pullPolicy: IfNotPresent
 
 namespace: dev

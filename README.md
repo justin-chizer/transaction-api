@@ -108,14 +108,11 @@ transaction-api/
   │   │   ├── Transaction.cs
   │   │   └── TransactionRequest.cs
   │   ├── Dockerfile
-  │   ├── Program.cs
+  │   ├── Program.cs              ← calls builder.Services.AddApiShieldReady()
+  │   ├── ApiShieldExtensions.cs  ← drop-in API Shield config (OpenAPI 3.0 + lowercase routing)
   │   ├── appsettings.json
-  │   ├── openapi.yaml            ← uploaded to Cloudflare API Shield
-  │   ├── openapi.json
-  │   ├── openapi.3.1.json        ← raw generated spec
-  │   └── convert-openapi.js      ← converts 3.1 → 3.0, outputs JSON + YAML
-  ├── dev.sh                      ← local dev reset script
-  └── openapi-format.config.json
+  │   └── openapi.json            ← OpenAPI 3.0, uploaded to Cloudflare API Shield
+  └── dev.sh                      ← local dev reset script
 ```
 
 ---
@@ -126,12 +123,10 @@ transaction-api/
 
 - .NET 10 SDK
 - Rancher Desktop (containerd runtime)
-- Node.js
 - `dotnet-ef` CLI tools
 
 ```bash
 dotnet tool install --global dotnet-ef
-npm install -g openapi-format
 ```
 
 ### Run locally
@@ -171,30 +166,50 @@ API will be available at `http://localhost:5297`.
 
 ## OpenAPI Spec
 
-The spec is generated from the controllers and converted to OpenAPI 3.0.3 for Cloudflare API Shield.
+The spec is generated directly from the controllers as OpenAPI 3.0, ready for Cloudflare API Shield — no conversion script. All the configuration lives in one drop-in file, [`ApiShieldExtensions.cs`](TransactionApi/ApiShieldExtensions.cs), and `Program.cs` wires it up with a single call:
+
+```csharp
+builder.Services.AddApiShieldReady();
+```
 
 ### Regenerate the spec
 
-**1. Start the API and export the raw spec:**
+Start the API and save the document:
 
 ```bash
-curl http://localhost:8080/openapi/v1.json -o TransactionApi/openapi.3.1.json
+curl http://localhost:8080/openapi/v1.json -o TransactionApi/openapi.json
 ```
 
-**2. Convert to OpenAPI 3.0.3 (JSON + YAML):**
+That single file is what the dev team consumes for client generation, what's uploaded to Cloudflare API Shield, and what the Redoc docs render (`infra/rdocly/openapi.json`).
 
-```bash
-cd TransactionApi
-node convert-openapi.js
-```
+### Make another .NET 10 API API-Shield-ready
 
-This outputs:
-- `openapi.json` — OpenAPI 3.0.3 in JSON format
-- `openapi.yaml` — OpenAPI 3.0.3 in YAML format, ready for Cloudflare API Shield
+`ApiShieldExtensions.cs` is self-contained and has no app-specific code, so adopting it elsewhere is two steps:
 
-### Why OpenAPI 3.0 and not 3.1?
+1. Copy `ApiShieldExtensions.cs` into the target project.
+2. Call `builder.Services.AddApiShieldReady();` in its `Program.cs`.
 
-Cloudflare API Shield and most enterprise API gateways are built against OpenAPI 3.0. The .NET 10 generator outputs 3.1 natively, so the conversion script handles the downgrade automatically.
+That's it — no extra `using` (the file lives in the `Microsoft.Extensions.DependencyInjection` namespace). `AddApiShieldReady()` bundles both things API Shield requires; the pieces are also exposed individually (`AddApiShieldOpenApi()`, `AddLowercaseRouting()`) if a service only needs one.
+
+> Set the API's real `servers` URL before uploading the schema to Cloudflare — by default it's the request URL (`localhost:8080`). Pass a transformer to the optional callback:
+> ```csharp
+> builder.Services.AddApiShieldReady(o => o.AddDocumentTransformer((doc, _, _) =>
+> {
+>     doc.Servers = [new() { Url = "https://api.example.com" }];
+>     return Task.CompletedTask;
+> }));
+> ```
+
+### What `AddApiShieldReady()` does, and why
+
+API Shield validates each incoming request against the uploaded schema at the edge, so the schema must be both **3.0** and an **exact match** for what the API serves:
+
+| Step | Reason |
+|---|---|
+| Emit **OpenAPI 3.0** (not the .NET 10 default 3.1) | API Shield and most gateways are built against 3.0. The framework serializer handles the downgrade, including `type: [..,"null"]` → `nullable: true`. |
+| Strip `text/json`, `application/*+json`, `text/plain` request bodies | The `application/*+json` wildcard trips up strict schema validators; the others are redundant noise. |
+| Give `decimal`/enum schemas an explicit `type` | The .NET generator omits `type` on those (and adds a meaningless regex `pattern` to decimals), which breaks client generators and can cause valid payloads to be rejected. |
+| **Lowercase routing** (`LowercaseUrls` + `LowercaseQueryStrings`) | API Shield matches request paths to schema operations case-sensitively. The documented paths are lowercase, so the served paths must be too. |
 
 ---
 
@@ -237,7 +252,7 @@ TLS is terminated at Cloudflare and re-established by Istio. The .NET pod operat
 
 ### Cloudflare API Shield
 
-The `openapi.yaml` is uploaded to Cloudflare API Shield which validates every incoming request at the edge against the schema before it reaches AKS. Invalid requests are rejected by Cloudflare — the pod never sees them.
+The `openapi.json` is uploaded to Cloudflare API Shield which validates every incoming request at the edge against the schema before it reaches AKS. Invalid requests are rejected by Cloudflare — the pod never sees them.
 
 ---
 
